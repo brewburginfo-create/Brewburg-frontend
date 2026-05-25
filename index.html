@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "e7de4ee5-1613-4e9f-badc-8e5fb5b7c212",
+    });
+  });
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>☕ Brewburg</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { background: #080808; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
+  #app { height: 100vh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
+  .header { padding: 16px 20px 10px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  .logo { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+  .tagline { font-size: 9px; color: #444; letter-spacing: 2px; margin-top: 2px; }
+  .live { display: flex; align-items: center; gap: 6px; background: #1a1a1a; padding: 5px 12px; border-radius: 20px; }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #00E5A0; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .live-text { font-size: 10px; color: #00E5A0; font-weight: 700; letter-spacing: 1px; }
+  .tabs { display: flex; padding: 0 20px; margin-bottom: 10px; border-bottom: 1px solid #1a1a1a; flex-shrink: 0; }
+  .tab { margin-right: 20px; padding-bottom: 8px; font-size: 13px; font-weight: 700; color: #444; cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab.active { color: #fff; border-bottom-color: #00E5A0; }
+  .categories { display: flex; gap: 8px; padding: 0 16px 12px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
+  .categories::-webkit-scrollbar { display: none; }
+  .cat { padding: 6px 14px; border-radius: 20px; background: #111; border: 1px solid #222; font-size: 12px; font-weight: 600; color: #666; cursor: pointer; white-space: nowrap; }
+  .feed { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; padding: 0 12px; scrollbar-width: none; overflow-x: hidden; }
+  .feed::-webkit-scrollbar { display: none; }
+  .card-wrapper { scroll-snap-align: start; position: relative; margin-bottom: 14px; min-height: calc(100vh - 210px); touch-action: pan-y; }
+  .card { background: #111; border-radius: 20px; padding: 20px; height: 100%; display: flex; flex-direction: column; border-left: 4px solid #444; will-change: transform; transition: none; }
+  .card.animating { transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  .swipe-hint-overlay { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .swipe-hint-overlay.visible { opacity: 1; }
+  .swipe-arrow { font-size: 24px; color: #00E5A0; animation: bounce 0.6s infinite alternate; }
+  @keyframes bounce { from { transform: translateX(0); } to { transform: translateX(-8px); } }
+  .swipe-hint-text { font-size: 10px; color: #00E5A0; font-weight: 700; letter-spacing: 1px; white-space: nowrap; }
+  .card-image { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 14px; }
+  .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .badge { padding: 4px 10px; border-radius: 8px; font-size: 9px; font-weight: 800; letter-spacing: 1px; }
+  .source { font-size: 11px; color: #444; }
+  .title { font-size: 18px; font-weight: 800; line-height: 1.3; margin-bottom: 14px; }
+  .brief { font-size: 14px; line-height: 1.7; color: #aaa; flex: 1; }
+  .brief b { color: #fff; font-weight: 800; }
+  .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #1e1e1e; }
+  .hint { font-size: 11px; color: #333; }
+  .actions { display: flex; gap: 16px; }
+  .btn { background: none; border: none; font-size: 20px; color: #555; cursor: pointer; padding: 4px; }
+  .btn.saved { color: #FFD700; }
+  .loader { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #444; }
+  .spinner { width: 32px; height: 32px; border: 3px solid #222; border-top-color: #00E5A0; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { flex: 1; display: flex; align-items: center; justify-content: center; color: #444; font-size: 14px; text-align: center; padding: 40px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div>
+      <div class="logo">☕ brewburg</div>
+      <div class="tagline">BUSINESS · 60 WORDS · UNFILTERED</div>
+    </div>
+    <div class="live"><div class="live-dot"></div><span class="live-text">LIVE</span></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('feed')">Feed</div>
+    <div class="tab" onclick="switchTab('saved')">Saved ★</div>
+  </div>
+  <div class="categories" id="cats"></div>
+  <div class="feed" id="feed"></div>
+</div>
+
+<script>
+const CAT_COLORS = { Funding:'#00E5A0', IPO:'#8B7FFF', 'M&A':'#FF6B6B', Markets:'#FFB347', 'Market Gap':'#00D4FF', Geopolitics:'#FF8C42', Policy:'#FF69B4' };
+const CATS = ['All','Funding','IPO','M&A','Markets','Market Gap','Geopolitics'];
+const API = 'https://brewburg-backend-1.onrender.com';
+let stories = [], saved = {}, activeTab = 'feed', activeCat = 'All';
+
+async function loadStories() {
+  document.getElementById('feed').innerHTML = '<div class="loader"><div class="spinner"></div><p>Brewing your news...</p></div>';
+  try {
+let url = activeCat === 'All' ? `${API}/api/stories?limit=40&order=published_at` : `${API}/api/stories?category=${activeCat}&limit=40&order=published_at`;
+    const res = await fetch(url);
+    const data = await res.json();
+    stories = data.stories || [];
+    render();
+  } catch(e) {
+    document.getElementById('feed').innerHTML = '<div class="empty">Could not connect to backend.<br>Make sure the API is running.</div>';
+  }
+}
+
+function render() {
+  const list = activeTab === 'saved' ? stories.filter(s => saved[s.id]) : stories;
+  if (!list.length) { document.getElementById('feed').innerHTML = '<div class="empty">No stories here yet.</div>'; return; }
+  document.getElementById('feed').innerHTML = list.map(s => {
+    const color = CAT_COLORS[s.category] || '#666';
+    const brief = (s.brief || '').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+    const img = s.image_url ? `<img class="card-image" src="${s.image_url}" onerror="this.style.display='none'">` : '';
+    return `
+    <div class="card-wrapper">
+      <div class="card" style="border-left-color:${color}" data-url="${s.url}" data-id="${s.id}">
+        ${img}
+        <div class="card-top">
+          <span class="badge" style="background:${color}22;color:${color}">${(s.category||'').toUpperCase()}</span>
+          <span class="source">${s.source||''}</span>
+        </div>
+        <div class="title">${s.title}</div>
+        <div class="brief">${brief}</div>
+        <div class="card-footer">
+          <span class="hint">← swipe left · full article</span>
+          <div class="actions">
+            <button class="btn ${saved[s.id]?'saved':''}" onclick="event.stopPropagation();toggleSave('${s.id}')">${saved[s.id]?'★':'☆'}</button>
+            <button class="btn" onclick="event.stopPropagation();window.location.href='${s.url}'">↗</button>
+          </div>
+        </div>
+      </div>
+      <div class="swipe-hint-overlay" id="hint-${s.id}">
+        <div class="swipe-arrow">←</div>
+        <div class="swipe-hint-text">ARTICLE</div>
+      </div>
+    </div>`;
+  }).join('');
+  setupSwipe();
+}
+
+function setupSwipe() {
+  document.querySelectorAll('.card').forEach(card => {
+    let startX = 0, startY = 0, currentX = 0, isHorizontal = null, url = card.dataset.url;
+    const hint = document.getElementById('hint-' + card.dataset.id);
+
+    card.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      currentX = 0;
+      isHorizontal = null;
+      card.classList.remove('animating');
+    }, { passive: true });
+
+    card.addEventListener('touchmove', e => {
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+
+      if (isHorizontal === null) {
+        isHorizontal = Math.abs(dx) > Math.abs(dy);
+      }
+
+      if (isHorizontal && dx < 0) {
+        currentX = dx;
+        card.style.transform = `translateX(${currentX}px)`;
+        const progress = Math.min(Math.abs(currentX) / 120, 1);
+        if (hint) hint.style.opacity = progress;
+      }
+    }, { passive: true });
+
+    card.addEventListener('touchend', e => {
+      card.classList.add('animating');
+      if (hint) hint.style.opacity = 0;
+
+      if (currentX < -80 && url) {
+        card.style.transform = 'translateX(-110%)';
+        setTimeout(() => { window.open(url, '_blank'); card.style.transition = 'transform 0.3s ease'; card.style.transform = 'translateX(0)'; }, 300);
+      } else {
+        card.style.transform = 'translateX(0)';
+      }
+      currentX = 0;
+      isHorizontal = null;
+    }, { passive: true });
+  });
+}
+
+function toggleSave(id) { saved[id] = !saved[id]; render(); }
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='feed')||(i===1&&tab==='saved')));
+  render();
+}
+function setCat(cat) {
+  activeCat = cat;
+  document.querySelectorAll('.cat').forEach(c => {
+    const a = c.dataset.cat === cat;
+    c.style.background = a ? (CAT_COLORS[cat]||'#666') : '#111';
+    c.style.borderColor = a ? (CAT_COLORS[cat]||'#666') : '#222';
+    c.style.color = a ? '#000' : '#666';
+  });
+  loadStories();
+}
+
+document.getElementById('cats').innerHTML = CATS.map(c=>`<div class="cat ${c==='All'?'active':''}" data-cat="${c}" onclick="setCat('${c}')" style="${c==='All'?'background:#666;border-color:#666;color:#000':''}">${c}</div>`).join('');
+// Pull to refresh
+let touchStartY = 0;
+let isRefreshing = false;
+document.getElementById('feed').addEventListener('touchstart', e => {
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.getElementById('feed').addEventListener('touchend', e => {
+  const pullDistance = e.changedTouches[0].clientY - touchStartY;
+  const isAtTop = document.getElementById('feed').scrollTop === 0;
+  if (pullDistance > 80 && isAtTop && !isRefreshing) {
+    isRefreshing = true;
+    loadStories().then(() => { isRefreshing = false; });
+  }
+}, { passive: true });
+
+// Auto refresh every 30 minutes
+setInterval(() => { if (activeTab === 'feed') loadStories(); }, 30 * 60 * 1000);
+
+loadStories();
+</script>
+</body>
+</html>
