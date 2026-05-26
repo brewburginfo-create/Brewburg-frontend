@@ -162,7 +162,7 @@ function setupSwipe() {
 
       if (currentX < -80 && url) {
         card.style.transform = 'translateX(-110%)';
-        setTimeout(() => { window.open(url, '_blank'); card.style.transition = 'transform 0.3s ease'; card.style.transform = 'translateX(0)'; }, 300);
+        setTimeout(() => { window.location.href = url; }, 300);
       } else {
         card.style.transform = 'translateX(0)';
       }
