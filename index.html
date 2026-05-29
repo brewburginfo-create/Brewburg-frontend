@@ -78,7 +78,7 @@
 const CAT_COLORS = { Funding:'#00E5A0', IPO:'#8B7FFF', 'M&A':'#FF6B6B', Markets:'#FFB347', 'Market Gap':'#00D4FF', Geopolitics:'#FF8C42', Policy:'#FF69B4' };
 const CATS = ['All','Funding','IPO','M&A','Markets','Market Gap','Geopolitics'];
 const API = 'https://brewburg-backend-1.onrender.com';
-let stories = [], saved = {}, activeTab = 'feed', activeCat = 'All';
+let stories = [], saved = JSON.parse(localStorage.getItem('brewburg_saved') || '{}'), activeTab = 'feed', activeCat = 'All';
 
 async function loadStories() {
   document.getElementById('feed').innerHTML = '<div class="loader"><div class="spinner"></div><p>Brewing your news...</p></div>';
@@ -181,7 +181,12 @@ function setupSwipe() {
   });
 }
 
-function toggleSave(id) { saved[id] = !saved[id]; render(); }
+function toggleSave(id) { 
+  saved[id] = !saved[id]; 
+  if (!saved[id]) delete saved[id];
+  localStorage.setItem('brewburg_saved', JSON.stringify(saved)); 
+  render(); 
+}
 function switchTab(tab) {
   activeTab = tab;
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='feed')||(i===1&&tab==='saved')));
