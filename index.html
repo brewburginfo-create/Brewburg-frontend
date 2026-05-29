@@ -80,18 +80,19 @@ const CATS = ['All','Funding','IPO','M&A','Markets','Market Gap','Geopolitics'];
 const API = 'https://brewburg-backend-1.onrender.com';
 let stories = [], saved = JSON.parse(localStorage.getItem('brewburg_saved') || '{}'), activeTab = 'feed', activeCat = 'All';
 
-async function loadStories() {
-try {
-    let url = activeCat === 'All' ? API + '/api/stories?limit=40&order=published_at' : API + '/api/stories?category=' + activeCat + '&limit=40&order=published_at';
+aasync function loadStories() {
+  document.getElementById('feed').innerHTML = '<div class="loader"><div class="spinner"></div><p>Brewing your news...</p></div>';
+  try {
+    const url = activeCat === 'All' ? API + '/api/stories?limit=40&order=published_at' : API + '/api/stories?category=' + activeCat + '&limit=40&order=published_at';
     const res = await fetch(url);
     const data = await res.json();
     stories = data.stories || [];
     render();
   } catch(e) {
+    console.log('Error:', e);
     document.getElementById('feed').innerHTML = '<div class="empty">Could not connect to backend.<br>Make sure the API is running.</div>';
   }
 }
-function render() {
   const list = activeTab === 'saved' ? stories.filter(s => saved[s.id]) : stories;
   if (!list.length) { document.getElementById('feed').innerHTML = '<div class="empty">No stories here yet.</div>'; return; }
   document.getElementById('feed').innerHTML = list.map(s => {
