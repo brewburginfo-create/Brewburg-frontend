@@ -170,14 +170,17 @@ function setupSwipe() {
 
       if (currentX < -80 && url) {
         card.style.transform = 'translateX(-110%)';
-        setTimeout(() => {
-  const scrollPos = document.querySelector('.feed').scrollTop;
-  sessionStorage.setItem('scrollPos', scrollPos);
-  window.location.href = url;
-}, 300);
-      currentX = 0;
-      isHorizontal = null;
-    }, { passive: true });
+       setTimeout(() => {
+          const scrollPos = document.querySelector('.feed').scrollTop;
+          sessionStorage.setItem('scrollPos', scrollPos);
+          window.location.href = url;
+        }, 300);
+        } else {
+          card.style.transform = 'translateX(0)';
+        }
+        currentX = 0;
+        isHorizontal = null;
+      }, { passive: true });
   });
 }
 
