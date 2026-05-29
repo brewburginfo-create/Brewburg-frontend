@@ -125,6 +125,14 @@ function render() {
     </div>`;
   }).join('');
   setupSwipe();
+  const saved = sessionStorage.getItem('scrollPos');
+  if (saved) {
+    setTimeout(() => {
+      const feed = document.getElementById('feed');
+      if (feed) feed.scrollTop = parseInt(saved);
+      sessionStorage.removeItem('scrollPos');
+    }, 150);
+  }
 }
 
 function setupSwipe() {
@@ -194,15 +202,45 @@ document.getElementById('cats').innerHTML = CATS.map(c=>`<div class="cat ${c==='
 // Pull to refresh
 let touchStartY = 0;
 let isRefreshing = false;
+
+// Create pull indicator element
+const pullIndicator = document.createElement('div');
+pullIndicator.id = 'pull-indicator';
+pullIndicator.innerHTML = '↓ Pull to refresh';
+pullIndicator.style.cssText = 'text-align:center;color:#00E5A0;font-size:13px;font-weight:600;letter-spacing:1px;height:0;overflow:hidden;transition:height 0.2s ease,opacity 0.2s ease;opacity:0;';
+document.getElementById('feed').before(pullIndicator);
+
 document.getElementById('feed').addEventListener('touchstart', e => {
   touchStartY = e.touches[0].clientY;
 }, { passive: true });
-document.getElementById('feed').addEventListener('touchend', e => {
-  const pullDistance = e.changedTouches[0].clientY - touchStartY;
+
+document.getElementById('feed').addEventListener('touchmove', e => {
+  if (isRefreshing) return;
+  const dist = e.touches[0].clientY - touchStartY;
   const isAtTop = document.getElementById('feed').scrollTop === 0;
-  if (pullDistance > 80 && isAtTop && !isRefreshing) {
+  if (dist > 0 && isAtTop) {
+    const h = Math.min(dist * 0.5, 44);
+    pullIndicator.style.height = h + 'px';
+    pullIndicator.style.opacity = '1';
+    pullIndicator.innerHTML = dist > 80 ? '↑ Release to refresh' : '↓ Pull to refresh';
+  }
+}, { passive: true });
+
+document.getElementById('feed').addEventListener('touchend', e => {
+  const dist = e.changedTouches[0].clientY - touchStartY;
+  const isAtTop = document.getElementById('feed').scrollTop === 0;
+  if (dist > 80 && isAtTop && !isRefreshing) {
     isRefreshing = true;
-    loadStories().then(() => { isRefreshing = false; });
+    pullIndicator.innerHTML = '⟳ Refreshing...';
+    pullIndicator.style.height = '44px';
+    loadStories().then(() => {
+      pullIndicator.style.height = '0';
+      pullIndicator.style.opacity = '0';
+      isRefreshing = false;
+    });
+  } else {
+    pullIndicator.style.height = '0';
+    pullIndicator.style.opacity = '0';
   }
 }, { passive: true });
 
