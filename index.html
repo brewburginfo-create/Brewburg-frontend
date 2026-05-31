@@ -26,19 +26,19 @@
   .tab { margin-right: 20px; padding-bottom: 8px; font-size: 13px; font-weight: 700; color: #444; cursor: pointer; border-bottom: 2px solid transparent; }
   .tab.active { color: #fff; border-bottom-color: #00E5A0; }
   .top-bar { display: flex; align-items: center; gap: 8px; padding: 0 16px 10px; flex-shrink: 0; }
-  .refresh-btn { font-size: 11px; color: #333; border: 1px solid #222; background: #111; padding: 4px 10px; border-radius: 20px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
   .categories { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; flex: 1; }
   .categories::-webkit-scrollbar { display: none; }
-  .cat { padding: 5px 13px; border-radius: 20px; background: #111; border: 1px solid #222; font-size: 12px; font-weight: 600; color: #666; cursor: pointer; white-space: nowrap; }
+  .cat { padding: 5px 13px; border-radius: 20px; background: #111; border: 1px solid #222; font-size: 12px; font-weight: 600; color: #666; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+  .refresh-btn { font-size: 11px; color: #444; border: 1px solid #222; background: #111; padding: 5px 10px; border-radius: 20px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
   .pull-indicator { text-align: center; color: #00E5A0; font-size: 13px; font-weight: 600; letter-spacing: 1px; height: 0; overflow: hidden; transition: height 0.15s ease, opacity 0.15s ease; opacity: 0; flex-shrink: 0; }
   .feed { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; padding: 0 12px; scrollbar-width: none; overflow-x: hidden; }
   .feed::-webkit-scrollbar { display: none; }
   .card-wrapper { scroll-snap-align: start; position: relative; margin-bottom: 14px; min-height: calc(100vh - 220px); touch-action: pan-y; }
   .card { background: #111; border-radius: 20px; padding: 20px; height: 100%; display: flex; flex-direction: column; border-left: 4px solid #444; will-change: transform; transition: none; position: relative; overflow: hidden; }
   .card.animating { transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-  .card.read { opacity: 0.55; }
-  .swipe-reveal { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: linear-gradient(to left, #00E5A022, transparent); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.1s; pointer-events: none; border-radius: 0 20px 20px 0; }
-  .swipe-arrow { font-size: 28px; color: #00E5A0; transform: translateX(8px); transition: transform 0.1s ease; }
+  .card.read { opacity: 0.5; }
+  .swipe-reveal { position: absolute; right: 0; top: 0; bottom: 0; width: 70px; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; border-radius: 0 20px 20px 0; background: linear-gradient(to left, rgba(0,229,160,0.15), transparent); }
+  .swipe-arrow { font-size: 26px; color: #00E5A0; transform: translateX(10px); transition: transform 0.1s ease; }
   .card-image { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 14px; }
   .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .badge { padding: 4px 10px; border-radius: 8px; font-size: 9px; font-weight: 800; letter-spacing: 1px; }
@@ -48,7 +48,6 @@
   .brief b { color: #fff; font-weight: 800; }
   .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid #1e1e1e; }
   .hint { font-size: 11px; color: #333; }
-  .actions { display: flex; gap: 16px; }
   .btn { background: none; border: none; font-size: 20px; color: #555; cursor: pointer; padding: 4px; }
   .btn.saved { color: #FFD700; }
   .loader { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #444; }
@@ -72,7 +71,7 @@
   </div>
   <div class="top-bar">
     <div class="categories" id="cats"></div>
-    <div class="refresh-btn" onclick="forceRefresh()">↻ Refresh</div>
+    <div class="refresh-btn" onclick="forceRefresh()">↻</div>
   </div>
   <div class="pull-indicator" id="pullIndicator">↓ Pull to refresh</div>
   <div class="feed" id="feed"></div>
@@ -104,20 +103,21 @@ async function loadStories() {
     sessionStorage.setItem('stories_cache', JSON.stringify(stories));
     render();
   } catch(e) {
-    document.getElementById('feed').innerHTML = '<div class="empty">Could not connect to backend.<br>Make sure the API is running.</div>';
+    document.getElementById('feed').innerHTML = '<div class="empty">Could not connect.<br>Tap ↻ to try again.</div>';
   }
 }
 
 function forceRefresh() {
   sessionStorage.removeItem('stories_cache');
-  sessionStorage.removeItem('scrollPos');
   loadStories();
 }
 
 function render() {
-  const list = activeTab === 'saved' ? stories.filter(s => saved[s.id]) : stories;
-  if (!list.length) { document.getElementById('feed').innerHTML = '<div class="empty">No stories here yet.</div>'; return; }
-  document.getElementById('feed').innerHTML = list.map(s => {
+  const unread = stories.filter(s => !readIds.includes(s.id));
+  const read = stories.filter(s => readIds.includes(s.id));
+  const ordered = activeTab === 'saved' ? stories.filter(s => saved[s.id]) : [...unread, ...read];
+  if (!ordered.length) { document.getElementById('feed').innerHTML = '<div class="empty">No stories here yet.</div>'; return; }
+  document.getElementById('feed').innerHTML = ordered.map(s => {
     const color = CAT_COLORS[s.category] || '#666';
     const brief = (s.brief || '').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
     const img = s.image_url ? '<img class="card-image" src="' + s.image_url + '" onerror="this.style.display=\'none\'">' : '';
@@ -128,22 +128,44 @@ function render() {
       '<div class="card-top"><span class="badge" style="background:' + color + '22;color:' + color + '">' + (s.category||'').toUpperCase() + '</span><span class="source">' + (s.source||'') + ' · ' + time + '</span></div>' +
       '<div class="title">' + s.title + '</div>' +
       '<div class="brief">' + brief + '</div>' +
-      '<div class="card-footer"><span class="hint">← swipe left for full article</span><div class="actions">' +
+      '<div class="card-footer"><span class="hint">← swipe left for article</span><div class="actions">' +
       '<button class="btn ' + (saved[s.id]?'saved':'') + '" onclick="event.stopPropagation();toggleSave(\'' + s.id + '\')">' + (saved[s.id]?'★':'☆') + '</button>' +
       '</div></div>' +
       '<div class="swipe-reveal" id="hint-' + s.id + '"><div class="swipe-arrow">←</div></div>' +
       '</div></div>';
   }).join('');
   setupSwipe();
-  const sv = sessionStorage.getItem('scrollPos');
-  if (sv) {
-    setTimeout(() => {
-      const f = document.getElementById('feed');
-      if (f) { f.scrollTop = parseInt(sv); sessionStorage.removeItem('scrollPos'); }
-    }, 100);
-  }
 }
 
+function openArticle(url) {
+  const story = stories.find(s => s.url === url);
+  if (!story) return;
+  const color = CAT_COLORS[story.category] || '#666';
+  const brief = (story.brief || '').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+  const backdrop = document.createElement('div');
+  backdrop.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9998;backdrop-filter:blur(4px);';
+  const sheet = document.createElement('div');
+  sheet.style.cssText = 'position:fixed;left:0;right:0;bottom:0;background:#141414;z-index:9999;border-radius:28px 28px 0 0;padding:0 20px 48px;transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);max-height:88vh;overflow-y:auto;';
+  sheet.innerHTML =
+    '<div style="width:36px;height:4px;background:#2a2a2a;border-radius:2px;margin:16px auto 20px;"></div>' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
+    '<span style="background:' + color + '22;color:' + color + ';font-size:9px;font-weight:800;letter-spacing:1px;padding:4px 10px;border-radius:8px;">' + (story.category||'').toUpperCase() + '</span>' +
+    '<span style="color:#444;font-size:11px;">' + (story.source||'') + ' · ' + timeAgo(story.published_at) + '</span></div>' +
+    (story.image_url ? '<img src="' + story.image_url + '" style="width:100%;height:180px;object-fit:cover;border-radius:14px;margin-bottom:18px;" onerror="this.style.display=\'none\'">' : '') +
+    '<div style="font-size:20px;font-weight:900;line-height:1.3;margin-bottom:14px;color:#fff;">' + story.title + '</div>' +
+    '<div style="font-size:14px;line-height:1.8;color:#aaa;margin-bottom:28px;">' + brief + '</div>' +
+    '<a href="' + url + '" target="_blank" style="display:block;background:#00E5A0;color:#000;font-size:15px;font-weight:800;text-align:center;padding:16px;border-radius:16px;text-decoration:none;margin-bottom:12px;">Read Full Article →</a>' +
+    '<button onclick="closeSheet()" style="display:block;width:100%;background:transparent;border:1px solid #222;color:#666;font-size:14px;font-weight:600;padding:14px;border-radius:16px;cursor:pointer;">← Back to Feed</button>';
+  function closeSheet() {
+    sheet.style.transform = 'translateY(100%)';
+    backdrop.style.opacity = '0';
+    setTimeout(() => { sheet.remove(); backdrop.remove(); }, 400);
+  }
+  backdrop.onclick = closeSheet;
+  document.body.appendChild(backdrop);
+  document.body.appendChild(sheet);
+  requestAnimationFrame(() => { sheet.style.transform = 'translateY(0)'; });
+}
 
 function setupSwipe() {
   document.querySelectorAll('.card').forEach(card => {
@@ -166,52 +188,33 @@ function setupSwipe() {
       if (isHorizontal === null) isHorizontal = Math.abs(dx) > Math.abs(dy);
       if (isHorizontal && dx < 0) {
         currentX = dx;
-        card.style.transform = 'translateX(' + currentX + 'px)';
-        const progress = Math.min(Math.abs(currentX) / 80, 1);
+        const clamped = Math.max(currentX, -100);
+        card.style.transform = 'translateX(' + clamped + 'px)';
+        const progress = Math.min(Math.abs(clamped) / 80, 1);
         if (hint) hint.style.opacity = progress;
-        if (arrow) arrow.style.transform = 'translateX(' + (-8 * progress) + 'px)';
+        if (arrow) arrow.style.transform = 'translateX(' + (-10 * progress) + 'px)';
       }
     }, { passive: true });
 
     card.addEventListener('touchend', () => {
-      card.classList.add('animating');
       if (hint) hint.style.opacity = 0;
-      if (arrow) arrow.style.transform = 'translateX(8px)';
-      if (currentX < -80 && url) {
-        card.style.transform = 'translateX(-110%)';
+      if (arrow) arrow.style.transform = 'translateX(10px)';
+      card.classList.add('animating');
+      card.style.transform = 'translateX(0)';
+      if (currentX < -60 && url) {
         if (!readIds.includes(id)) {
           readIds.push(id);
           localStorage.setItem('brewburg_read', JSON.stringify(readIds));
+          const cardEl = document.querySelector('[data-id="' + id + '"]');
+          if (cardEl) cardEl.classList.add('read');
         }
-        openArticle(url);
-      } else {
-        card.style.transform = 'translateX(0)';
+        setTimeout(() => openArticle(url), 300);
       }
       currentX = 0; isHorizontal = null;
     }, { passive: true });
   });
 }
 
-function openArticle(url) {
-  const story = stories.find(s => s.url === url);
-  if (!story) { window.open(url, '_blank'); return; }
-  const color = CAT_COLORS[story.category] || '#666';
-  const brief = (story.brief || '').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#080808;z-index:9999;display:flex;flex-direction:column;overflow-y:auto;';
-  overlay.innerHTML =
-    '<div style="display:flex;align-items:center;padding:14px 16px;background:#111;gap:12px;flex-shrink:0;border-bottom:1px solid #1a1a1a;">' +
-    '<button onclick="this.closest(\'div[style*=z-index]\').remove()" style="background:none;border:none;color:#00E5A0;font-size:15px;font-weight:700;cursor:pointer;">← Back</button>' +
-    '<span style="color:#444;font-size:11px;">' + (story.source||'') + '</span></div>' +
-    '<div style="padding:24px 20px;flex:1;">' +
-    (story.image_url ? '<img src="' + story.image_url + '" style="width:100%;height:200px;object-fit:cover;border-radius:14px;margin-bottom:20px;" onerror="this.style.display=\'none\'">' : '') +
-    '<div style="background:' + color + '22;color:' + color + ';font-size:9px;font-weight:800;letter-spacing:1px;padding:4px 10px;border-radius:8px;display:inline-block;margin-bottom:14px;">' + (story.category||'').toUpperCase() + '</div>' +
-    '<div style="font-size:22px;font-weight:900;line-height:1.3;margin-bottom:16px;">' + story.title + '</div>' +
-    '<div style="font-size:15px;line-height:1.8;color:#aaa;margin-bottom:32px;">' + brief + '</div>' +
-    '<a href="' + url + '" target="_blank" style="display:block;background:#00E5A0;color:#000;font-size:15px;font-weight:800;text-align:center;padding:16px;border-radius:16px;text-decoration:none;letter-spacing:0.3px;">Read Full Article →</a>' +
-    '<div style="height:40px;"></div></div>';
-  document.body.appendChild(overlay);
-}
 function toggleSave(id) {
   saved[id] = !saved[id];
   if (!saved[id]) delete saved[id];
@@ -241,55 +244,35 @@ document.getElementById('cats').innerHTML = CATS.map(c =>
   '<div class="cat" data-cat="' + c + '" onclick="setCat(\'' + c + '\')" style="' + (c==='All'?'background:#666;border-color:#666;color:#000':'') + '">' + c + '</div>'
 ).join('');
 
-// On load — restore cache if coming back from article
-const cached = sessionStorage.getItem('stories_cache');
-const scrollPos = sessionStorage.getItem('scrollPos');
-if (cached && scrollPos) {
-  stories = JSON.parse(cached);
-  render();
-} else {
-  loadStories();
-}
-
-// Pull to refresh on feed
+// Pull to refresh
 const pullEl = document.getElementById('pullIndicator');
 let touchStartY = 0, isRefreshing = false;
-
-document.getElementById('feed').addEventListener('touchstart', e => {
-  touchStartY = e.touches[0].clientY;
-}, { passive: true });
-
+document.getElementById('feed').addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
 document.getElementById('feed').addEventListener('touchmove', e => {
   if (isRefreshing) return;
   const dist = e.touches[0].clientY - touchStartY;
-  const feed = document.getElementById('feed');
-  if (dist > 0 && feed.scrollTop === 0) {
-    const h = Math.min(dist * 0.45, 40);
-    pullEl.style.height = h + 'px';
+  if (dist > 0 && document.getElementById('feed').scrollTop === 0) {
+    pullEl.style.height = Math.min(dist * 0.45, 40) + 'px';
     pullEl.style.opacity = Math.min(dist / 60, 1);
     pullEl.textContent = dist > 70 ? '↑ Release to refresh' : '↓ Pull to refresh';
   }
 }, { passive: true });
-
 document.getElementById('feed').addEventListener('touchend', e => {
   const dist = e.changedTouches[0].clientY - touchStartY;
-  const feed = document.getElementById('feed');
-  if (dist > 70 && feed.scrollTop === 0 && !isRefreshing) {
+  if (dist > 70 && document.getElementById('feed').scrollTop === 0 && !isRefreshing) {
     isRefreshing = true;
     pullEl.textContent = '⟳ Refreshing...';
     pullEl.style.height = '40px';
     pullEl.style.opacity = '1';
     sessionStorage.removeItem('stories_cache');
-    loadStories().then(() => {
-      pullEl.style.height = '0';
-      pullEl.style.opacity = '0';
-      isRefreshing = false;
-    });
+    loadStories().then(() => { pullEl.style.height = '0'; pullEl.style.opacity = '0'; isRefreshing = false; });
   } else {
-    pullEl.style.height = '0';
-    pullEl.style.opacity = '0';
+    pullEl.style.height = '0'; pullEl.style.opacity = '0';
   }
 }, { passive: true });
+
+const cached = sessionStorage.getItem('stories_cache');
+if (cached) { stories = JSON.parse(cached); render(); } else { loadStories(); }
 
 setInterval(() => { sessionStorage.removeItem('stories_cache'); loadStories(); }, 30 * 60 * 1000);
 </script>
