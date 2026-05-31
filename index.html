@@ -183,10 +183,7 @@ function setupSwipe() {
           readIds.push(id);
           localStorage.setItem('brewburg_read', JSON.stringify(readIds));
         }
-        setTimeout(() => {
-          sessionStorage.setItem('scrollPos', document.getElementById('feed').scrollTop);
-          openArticle(url);
-        }, 280);
+        openArticle(url);
       } else {
         card.style.transform = 'translateX(0)';
       }
