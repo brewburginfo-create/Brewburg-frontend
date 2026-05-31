@@ -144,6 +144,7 @@ function render() {
   }
 }
 
+
 function setupSwipe() {
   document.querySelectorAll('.card').forEach(card => {
     let startX = 0, startY = 0, currentX = 0, isHorizontal = null;
@@ -184,7 +185,7 @@ function setupSwipe() {
         }
         setTimeout(() => {
           sessionStorage.setItem('scrollPos', document.getElementById('feed').scrollTop);
-          window.open(url, '_blank');
+          openArticle(url);
         }, 280);
       } else {
         card.style.transform = 'translateX(0)';
@@ -194,6 +195,16 @@ function setupSwipe() {
   });
 }
 
+function openArticle(url) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#080808;z-index:9999;display:flex;flex-direction:column;';
+  overlay.innerHTML = '<div style="display:flex;align-items:center;padding:12px 16px;background:#111;gap:12px;flex-shrink:0;">' +
+    '<button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:#00E5A0;font-size:16px;font-weight:700;cursor:pointer;padding:4px 8px;">← Back</button>' +
+    '<span style="color:#444;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">' + url + '</span>' +
+    '</div>' +
+    '<iframe src="' + url + '" style="flex:1;border:none;background:#fff;" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>';
+  document.body.appendChild(overlay);
+}
 function toggleSave(id) {
   saved[id] = !saved[id];
   if (!saved[id]) delete saved[id];
