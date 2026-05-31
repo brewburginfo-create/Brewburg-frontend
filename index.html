@@ -55,6 +55,12 @@
   .spinner { width: 32px; height: 32px; border: 3px solid #222; border-top-color: #00E5A0; border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .empty { flex: 1; display: flex; align-items: center; justify-content: center; color: #444; font-size: 14px; text-align: center; padding: 40px; }
+  .swipe-hint-overlay { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.15s ease; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .swipe-arrow { font-size: 24px; color: #00E5A0; transition: transform 0.1s ease; }
+  @keyframes slideLeft { 0%,100%{transform:translateX(0)} 50%{transform:translateX(-6px)} }
+  .swipe-hint-text { font-size: 10px; color: #00E5A0; font-weight: 700; letter-spacing: 1px; }
+  .pull-indicator { text-align:center; color:#00E5A0; font-size:13px; font-weight:600; letter-spacing:1px; height:0; overflow:hidden; transition:height 0.2s ease, opacity 0.2s ease; opacity:0; }
+  .read { opacity: 0.5; }
 </style>
 </head>
 <body>
@@ -79,6 +85,15 @@ const CAT_COLORS = { Funding:'#00E5A0', IPO:'#8B7FFF', 'M&A':'#FF6B6B', Markets:
 const CATS = ['All','Funding','IPO','M&A','Markets','Market Gap','Geopolitics'];
 const API = 'https://brewburg-backend-1.onrender.com';
 let stories = [], saved = JSON.parse(localStorage.getItem('brewburg_saved') || '{}'), activeTab = 'feed', activeCat = 'All';
+let readIds = JSON.parse(localStorage.getItem('brewburg_read') || '[]');
+
+function timeAgo(dateStr) {
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return new Date(dateStr).toLocaleDateString('en-IN', {day:'numeric', month:'short'});
+}
 
 async function loadStories() {
   document.getElementById('feed').innerHTML = '<div class="loader"><div class="spinner"></div><p>Brewing your news...</p></div>';
@@ -101,10 +116,11 @@ function render() {
     const color = CAT_COLORS[s.category] || '#666';
     const brief = (s.brief || '').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
     const img = s.image_url ? '<img class="card-image" src="' + s.image_url + '" onerror="this.style.display=\'none\'">' : '';
-    const date = s.published_at ? new Date(s.published_at).toDateString() : '';
-    return '<div class="card-wrapper"><div class="card" style="border-left-color:' + color + '" data-url="' + s.url + '" data-id="' + s.id + '">' +
+    const time = s.published_at ? timeAgo(s.published_at) : '';
+    const isRead = readIds.includes(s.id);
+    return '<div class="card-wrapper"><div class="card' + (isRead ? ' read' : '') + '" style="border-left-color:' + color + '" data-url="' + s.url + '" data-id="' + s.id + '">' +
       img +
-      '<div class="card-top"><span class="badge" style="background:' + color + '22;color:' + color + '">' + (s.category||'').toUpperCase() + '</span><span class="source">' + (s.source||'') + ' - ' + date + '</span></div>' +
+      '<div class="card-top"><span class="badge" style="background:' + color + '22;color:' + color + '">' + (s.category||'').toUpperCase() + '</span><span class="source">' + (s.source||'') + ' · ' + time + '</span></div>' +
       '<div class="title">' + s.title + '</div>' +
       '<div class="brief">' + brief + '</div>' +
       '<div class="card-footer"><span class="hint">← swipe left · full article</span><div class="actions">' +
@@ -116,7 +132,7 @@ function render() {
   }).join('');
   setupSwipe();
   const sv = sessionStorage.getItem('scrollPos');
-  if (sv) { setTimeout(() => { const f = document.getElementById('feed'); if(f) { f.scrollTop = parseInt(sv); sessionStorage.removeItem('scrollPos'); } }, 150); }
+  if (sv) { setTimeout(() => { const f = document.getElementById('feed'); if(f) { f.scrollTop = parseInt(sv); sessionStorage.removeItem('scrollPos'); } }, 200); }
 }
 
 function setupSwipe() {
@@ -132,17 +148,23 @@ function setupSwipe() {
         currentX = dx;
         card.style.transform = 'translateX(' + currentX + 'px)';
         const hint = document.getElementById('hint-' + id);
-        if (hint) hint.style.opacity = Math.min(Math.abs(currentX) / 120, 1);
+        if (hint) {
+          const progress = Math.min(Math.abs(currentX) / 80, 1);
+          hint.style.opacity = progress;
+          hint.querySelector('.swipe-arrow').style.transform = 'translateX(' + (-8 * progress) + 'px)';
+        }
       }
     }, { passive: true });
     card.addEventListener('touchend', () => {
       card.classList.add('animating');
       const hint = document.getElementById('hint-' + id);
-      if (hint) hint.style.opacity = 0;
+      if (hint) { hint.style.opacity = 0; hint.querySelector('.swipe-arrow').style.transform = 'translateX(0)'; }
       if (currentX < -80 && url) {
         card.style.transform = 'translateX(-110%)';
+        if (!readIds.includes(id)) { readIds.push(id); localStorage.setItem('brewburg_read', JSON.stringify(readIds)); }
         setTimeout(() => {
           sessionStorage.setItem('scrollPos', document.getElementById('feed').scrollTop);
+          sessionStorage.setItem('stories_cache', JSON.stringify(stories));
           window.location.href = url;
         }, 300);
       } else {
@@ -179,18 +201,29 @@ function setCat(cat) {
 
 document.getElementById('cats').innerHTML = CATS.map(c => '<div class="cat' + (c==='All'?' active':'') + '" data-cat="' + c + '" onclick="setCat(\'' + c + '\')" style="' + (c==='All'?'background:#666;border-color:#666;color:#000':'') + '">' + c + '</div>').join('');
 
+// Restore from cache on back navigation
+const cachedStories = sessionStorage.getItem('stories_cache');
+const cachedScroll = sessionStorage.getItem('scrollPos');
+if (cachedStories && cachedScroll) {
+  stories = JSON.parse(cachedStories);
+  render();
+} else {
+  loadStories();
+}
+
 // Pull to refresh
 let touchStartY = 0, isRefreshing = false;
 const pullIndicator = document.createElement('div');
-pullIndicator.style.cssText = 'text-align:center;color:#00E5A0;font-size:13px;font-weight:600;letter-spacing:1px;height:0;overflow:hidden;transition:height 0.2s ease,opacity 0.2s ease;opacity:0;';
+pullIndicator.className = 'pull-indicator';
+pullIndicator.innerHTML = '↓ Pull to refresh';
 document.getElementById('feed').before(pullIndicator);
 document.getElementById('feed').addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
 document.getElementById('feed').addEventListener('touchmove', e => {
   if (isRefreshing) return;
   const dist = e.touches[0].clientY - touchStartY;
   if (dist > 0 && document.getElementById('feed').scrollTop === 0) {
-    pullIndicator.style.height = Math.min(dist*0.5, 44) + 'px';
-    pullIndicator.style.opacity = '1';
+    pullIndicator.style.height = Math.min(dist * 0.5, 44) + 'px';
+    pullIndicator.style.opacity = Math.min(dist / 80, 1);
     pullIndicator.innerHTML = dist > 80 ? '↑ Release to refresh' : '↓ Pull to refresh';
   }
 }, { passive: true });
@@ -200,15 +233,12 @@ document.getElementById('feed').addEventListener('touchend', e => {
     isRefreshing = true;
     pullIndicator.innerHTML = '⟳ Refreshing...';
     pullIndicator.style.height = '44px';
+    sessionStorage.removeItem('stories_cache');
     loadStories().then(() => { pullIndicator.style.height = '0'; pullIndicator.style.opacity = '0'; isRefreshing = false; });
   } else {
-    pullIndicator.style.height = '0';
-    pullIndicator.style.opacity = '0';
+    pullIndicator.style.height = '0'; pullIndicator.style.opacity = '0';
   }
 }, { passive: true });
 
 setInterval(loadStories, 30 * 60 * 1000);
-loadStories();
 </script>
-</body>
-</html>
