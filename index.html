@@ -64,7 +64,7 @@
       <div class="logo">☕ brewburg</div>
       <div class="tagline">BUSINESS · 60 WORDS · UNFILTERED</div>
     </div>
-    <div class="live"><div class="live-dot"></div><span class="live-text">LIVE</span></div>
+    <div class="live"><div class="live-dot"></div><div class="live-text">LIVE</div></div>
   </div>
   <div class="tabs">
     <div class="tab active" onclick="switchTab('feed')">Feed</div>
@@ -75,7 +75,7 @@
 </div>
 
 <script>
-const CAT_COLORS = { Funding:'#00E5A0', IPO:'#8B7FFF', 'M&A':'#FF6B6B', Markets:'#FFB347', 'Market Gap':'#00D4FF', Geopolitics:'#FF8C42', Policy:'#FF69B4' };
+const CAT_COLORS = { Funding:'#00E5A0', IPO:'#8B7FFF', 'M&A':'#FF6B6B', Markets:'#FFB347', 'Market Gap':'#00D4FF', Geopolitics:'#FF8C42' };
 const CATS = ['All','Funding','IPO','M&A','Markets','Market Gap','Geopolitics'];
 const API = 'https://brewburg-backend-1.onrender.com';
 let stories = [], saved = JSON.parse(localStorage.getItem('brewburg_saved') || '{}'), activeTab = 'feed', activeCat = 'All';
@@ -89,102 +89,83 @@ async function loadStories() {
     stories = data.stories || [];
     render();
   } catch(e) {
-    console.log('Error:', e);
+    console.log('Fetch error:', e);
     document.getElementById('feed').innerHTML = '<div class="empty">Could not connect to backend.<br>Make sure the API is running.</div>';
   }
 }
+
+function render() {
   const list = activeTab === 'saved' ? stories.filter(s => saved[s.id]) : stories;
   if (!list.length) { document.getElementById('feed').innerHTML = '<div class="empty">No stories here yet.</div>'; return; }
   document.getElementById('feed').innerHTML = list.map(s => {
     const color = CAT_COLORS[s.category] || '#666';
     const brief = (s.brief || '').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-    const img = s.image_url ? `<img class="card-image" src="${s.image_url}" onerror="this.style.display='none'">` : '';
-    return `
-    <div class="card-wrapper">
-      <div class="card" style="border-left-color:${color}" data-url="${s.url}" data-id="${s.id}">
-        ${img}
-        <div class="card-top">
-          <span class="badge" style="background:${color}22;color:${color}">${(s.category||'').toUpperCase()}</span>
-<span class="source">${s.source||''} - ${s.published_at ? new Date(s.published_at).toDateString() : ''}</span>
-        </div>
-        <div class="title">${s.title}</div>
-        <div class="brief">${brief}</div>
-        <div class="card-footer">
-          <span class="hint">← swipe left · full article</span>
-          <div class="actions">
-            <button class="btn ${saved[s.id]?'saved':''}" onclick="event.stopPropagation();toggleSave('${s.id}')">${saved[s.id]?'★':'☆'}</button>
-            <button class="btn" onclick="event.stopPropagation();window.location.href='${s.url}'">↗</button>
-          </div>
-        </div>
-      </div>
-      <div class="swipe-hint-overlay" id="hint-${s.id}">
-        <div class="swipe-arrow">←</div>
-        <div class="swipe-hint-text">ARTICLE</div>
-      </div>
-    </div>`;
+    const img = s.image_url ? '<img class="card-image" src="' + s.image_url + '" onerror="this.style.display=\'none\'">' : '';
+    const date = s.published_at ? new Date(s.published_at).toDateString() : '';
+    return '<div class="card-wrapper"><div class="card" style="border-left-color:' + color + '" data-url="' + s.url + '" data-id="' + s.id + '">' +
+      img +
+      '<div class="card-top"><span class="badge" style="background:' + color + '22;color:' + color + '">' + (s.category||'').toUpperCase() + '</span><span class="source">' + (s.source||'') + ' - ' + date + '</span></div>' +
+      '<div class="title">' + s.title + '</div>' +
+      '<div class="brief">' + brief + '</div>' +
+      '<div class="card-footer"><span class="hint">← swipe left · full article</span><div class="actions">' +
+      '<button class="btn ' + (saved[s.id]?'saved':'') + '" onclick="event.stopPropagation();toggleSave(\'' + s.id + '\')">' + (saved[s.id]?'★':'☆') + '</button>' +
+      '<button class="btn" onclick="event.stopPropagation();window.location.href=\'' + s.url + '\'">↗</button>' +
+      '</div></div>' +
+      '<div class="swipe-hint-overlay" id="hint-' + s.id + '"><div class="swipe-arrow">←</div><div class="swipe-hint-text">ARTICLE</div></div>' +
+      '</div></div>';
   }).join('');
   setupSwipe();
+  const sv = sessionStorage.getItem('scrollPos');
+  if (sv) { setTimeout(() => { const f = document.getElementById('feed'); if(f) { f.scrollTop = parseInt(sv); sessionStorage.removeItem('scrollPos'); } }, 150); }
+}
 
 function setupSwipe() {
   document.querySelectorAll('.card').forEach(card => {
-    let startX = 0, startY = 0, currentX = 0, isHorizontal = null, url = card.dataset.url;
-    const hint = document.getElementById('hint-' + card.dataset.id);
-
-    card.addEventListener('touchstart', e => {
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      currentX = 0;
-      isHorizontal = null;
-      card.classList.remove('animating');
-    }, { passive: true });
-
+    let startX = 0, startY = 0, currentX = 0, isHorizontal = null;
+    const url = card.dataset.url;
+    const id = card.dataset.id;
+    card.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; currentX = 0; isHorizontal = null; card.classList.remove('animating'); }, { passive: true });
     card.addEventListener('touchmove', e => {
-      const dx = e.touches[0].clientX - startX;
-      const dy = e.touches[0].clientY - startY;
-
-      if (isHorizontal === null) {
-        isHorizontal = Math.abs(dx) > Math.abs(dy);
-      }
-
+      const dx = e.touches[0].clientX - startX, dy = e.touches[0].clientY - startY;
+      if (isHorizontal === null) isHorizontal = Math.abs(dx) > Math.abs(dy);
       if (isHorizontal && dx < 0) {
         currentX = dx;
-        card.style.transform = `translateX(${currentX}px)`;
-        const progress = Math.min(Math.abs(currentX) / 120, 1);
-        if (hint) hint.style.opacity = progress;
+        card.style.transform = 'translateX(' + currentX + 'px)';
+        const hint = document.getElementById('hint-' + id);
+        if (hint) hint.style.opacity = Math.min(Math.abs(currentX) / 120, 1);
       }
     }, { passive: true });
-
-    card.addEventListener('touchend', e => {
+    card.addEventListener('touchend', () => {
       card.classList.add('animating');
+      const hint = document.getElementById('hint-' + id);
       if (hint) hint.style.opacity = 0;
-
       if (currentX < -80 && url) {
         card.style.transform = 'translateX(-110%)';
-       setTimeout(() => {
-          const scrollPos = document.querySelector('.feed').scrollTop;
-          sessionStorage.setItem('scrollPos', scrollPos);
+        setTimeout(() => {
+          sessionStorage.setItem('scrollPos', document.getElementById('feed').scrollTop);
           window.location.href = url;
         }, 300);
-        } else {
-          card.style.transform = 'translateX(0)';
-        }
-        currentX = 0;
-        isHorizontal = null;
-      }, { passive: true });
+      } else {
+        card.style.transform = 'translateX(0)';
+      }
+      currentX = 0; isHorizontal = null;
+    }, { passive: true });
   });
 }
 
-function toggleSave(id) { 
-  saved[id] = !saved[id]; 
+function toggleSave(id) {
+  saved[id] = !saved[id];
   if (!saved[id]) delete saved[id];
-  localStorage.setItem('brewburg_saved', JSON.stringify(saved)); 
-  render(); 
-}
-function switchTab(tab) {
-  activeTab = tab;
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='feed')||(i===1&&tab==='saved')));
+  localStorage.setItem('brewburg_saved', JSON.stringify(saved));
   render();
 }
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (i===0&&tab==='feed')||(i===1&&tab==='saved')));
+  render();
+}
+
 function setCat(cat) {
   activeCat = cat;
   document.querySelectorAll('.cat').forEach(c => {
@@ -196,55 +177,37 @@ function setCat(cat) {
   loadStories();
 }
 
-document.getElementById('cats').innerHTML = CATS.map(c=>`<div class="cat ${c==='All'?'active':''}" data-cat="${c}" onclick="setCat('${c}')" style="${c==='All'?'background:#666;border-color:#666;color:#000':''}">${c}</div>`).join('');
-// Pull to refresh
-let touchStartY = 0;
-let isRefreshing = false;
+document.getElementById('cats').innerHTML = CATS.map(c => '<div class="cat' + (c==='All'?' active':'') + '" data-cat="' + c + '" onclick="setCat(\'' + c + '\')" style="' + (c==='All'?'background:#666;border-color:#666;color:#000':'') + '">' + c + '</div>').join('');
 
-// Create pull indicator element
+// Pull to refresh
+let touchStartY = 0, isRefreshing = false;
 const pullIndicator = document.createElement('div');
-pullIndicator.id = 'pull-indicator';
-pullIndicator.innerHTML = '↓ Pull to refresh';
 pullIndicator.style.cssText = 'text-align:center;color:#00E5A0;font-size:13px;font-weight:600;letter-spacing:1px;height:0;overflow:hidden;transition:height 0.2s ease,opacity 0.2s ease;opacity:0;';
 document.getElementById('feed').before(pullIndicator);
-
-document.getElementById('feed').addEventListener('touchstart', e => {
-  touchStartY = e.touches[0].clientY;
-}, { passive: true });
-
+document.getElementById('feed').addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
 document.getElementById('feed').addEventListener('touchmove', e => {
   if (isRefreshing) return;
   const dist = e.touches[0].clientY - touchStartY;
-  const isAtTop = document.getElementById('feed').scrollTop === 0;
-  if (dist > 0 && isAtTop) {
-    const h = Math.min(dist * 0.5, 44);
-    pullIndicator.style.height = h + 'px';
+  if (dist > 0 && document.getElementById('feed').scrollTop === 0) {
+    pullIndicator.style.height = Math.min(dist*0.5, 44) + 'px';
     pullIndicator.style.opacity = '1';
     pullIndicator.innerHTML = dist > 80 ? '↑ Release to refresh' : '↓ Pull to refresh';
   }
 }, { passive: true });
-
 document.getElementById('feed').addEventListener('touchend', e => {
   const dist = e.changedTouches[0].clientY - touchStartY;
-  const isAtTop = document.getElementById('feed').scrollTop === 0;
-  if (dist > 80 && isAtTop && !isRefreshing) {
+  if (dist > 80 && document.getElementById('feed').scrollTop === 0 && !isRefreshing) {
     isRefreshing = true;
     pullIndicator.innerHTML = '⟳ Refreshing...';
     pullIndicator.style.height = '44px';
-    loadStories().then(() => {
-      pullIndicator.style.height = '0';
-      pullIndicator.style.opacity = '0';
-      isRefreshing = false;
-    });
+    loadStories().then(() => { pullIndicator.style.height = '0'; pullIndicator.style.opacity = '0'; isRefreshing = false; });
   } else {
     pullIndicator.style.height = '0';
     pullIndicator.style.opacity = '0';
   }
 }, { passive: true });
 
-// Auto refresh every 30 minutes
-setInterval(() => { if (activeTab === 'feed') loadStories(); }, 30 * 60 * 1000);
-
+setInterval(loadStories, 30 * 60 * 1000);
 loadStories();
 </script>
 </body>
