@@ -184,7 +184,7 @@ function setupSwipe() {
         }
         setTimeout(() => {
           sessionStorage.setItem('scrollPos', document.getElementById('feed').scrollTop);
-          window.location.href = url;
+          window.open(url, '_blank');
         }, 280);
       } else {
         card.style.transform = 'translateX(0)';
