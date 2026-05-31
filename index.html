@@ -124,15 +124,6 @@ async function loadStories() {
     </div>`;
   }).join('');
   setupSwipe();
-  const saved = sessionStorage.getItem('scrollPos');
-  if (saved) {
-    setTimeout(() => {
-      const feed = document.getElementById('feed');
-      if (feed) feed.scrollTop = parseInt(saved);
-      sessionStorage.removeItem('scrollPos');
-    }, 150);
-  }
-}
 
 function setupSwipe() {
   document.querySelectorAll('.card').forEach(card => {
