@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<head>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "e7de4ee5-1613-4e9f-badc-8e5fb5b7c212",
-    });
+    await OneSignal.init({ appId: "e7de4ee5-1613-4e9f-badc-8e5fb5b7c212" });
   });
 </script>
 <meta charset="UTF-8">
@@ -23,22 +22,23 @@
   .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #00E5A0; animation: pulse 1.5s infinite; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
   .live-text { font-size: 10px; color: #00E5A0; font-weight: 700; letter-spacing: 1px; }
-  .tabs { display: flex; padding: 0 20px; margin-bottom: 10px; border-bottom: 1px solid #1a1a1a; flex-shrink: 0; }
+  .tabs { display: flex; padding: 0 20px; margin-bottom: 6px; border-bottom: 1px solid #1a1a1a; flex-shrink: 0; }
   .tab { margin-right: 20px; padding-bottom: 8px; font-size: 13px; font-weight: 700; color: #444; cursor: pointer; border-bottom: 2px solid transparent; }
   .tab.active { color: #fff; border-bottom-color: #00E5A0; }
-  .categories { display: flex; gap: 8px; padding: 0 16px 12px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; }
+  .top-bar { display: flex; align-items: center; gap: 8px; padding: 0 16px 10px; flex-shrink: 0; }
+  .refresh-btn { font-size: 11px; color: #333; border: 1px solid #222; background: #111; padding: 4px 10px; border-radius: 20px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .categories { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; flex: 1; }
   .categories::-webkit-scrollbar { display: none; }
-  .cat { padding: 6px 14px; border-radius: 20px; background: #111; border: 1px solid #222; font-size: 12px; font-weight: 600; color: #666; cursor: pointer; white-space: nowrap; }
+  .cat { padding: 5px 13px; border-radius: 20px; background: #111; border: 1px solid #222; font-size: 12px; font-weight: 600; color: #666; cursor: pointer; white-space: nowrap; }
+  .pull-indicator { text-align: center; color: #00E5A0; font-size: 13px; font-weight: 600; letter-spacing: 1px; height: 0; overflow: hidden; transition: height 0.15s ease, opacity 0.15s ease; opacity: 0; flex-shrink: 0; }
   .feed { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; padding: 0 12px; scrollbar-width: none; overflow-x: hidden; }
   .feed::-webkit-scrollbar { display: none; }
-  .card-wrapper { scroll-snap-align: start; position: relative; margin-bottom: 14px; min-height: calc(100vh - 210px); touch-action: pan-y; }
-  .card { background: #111; border-radius: 20px; padding: 20px; height: 100%; display: flex; flex-direction: column; border-left: 4px solid #444; will-change: transform; transition: none; }
+  .card-wrapper { scroll-snap-align: start; position: relative; margin-bottom: 14px; min-height: calc(100vh - 220px); touch-action: pan-y; }
+  .card { background: #111; border-radius: 20px; padding: 20px; height: 100%; display: flex; flex-direction: column; border-left: 4px solid #444; will-change: transform; transition: none; position: relative; overflow: hidden; }
   .card.animating { transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-  .swipe-hint-overlay { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.2s; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .swipe-hint-overlay.visible { opacity: 1; }
-  .swipe-arrow { font-size: 24px; color: #00E5A0; animation: bounce 0.6s infinite alternate; }
-  @keyframes bounce { from { transform: translateX(0); } to { transform: translateX(-8px); } }
-  .swipe-hint-text { font-size: 10px; color: #00E5A0; font-weight: 700; letter-spacing: 1px; white-space: nowrap; }
+  .card.read { opacity: 0.55; }
+  .swipe-reveal { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; background: linear-gradient(to left, #00E5A022, transparent); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.1s; pointer-events: none; border-radius: 0 20px 20px 0; }
+  .swipe-arrow { font-size: 28px; color: #00E5A0; transform: translateX(8px); transition: transform 0.1s ease; }
   .card-image { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 14px; }
   .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .badge { padding: 4px 10px; border-radius: 8px; font-size: 9px; font-weight: 800; letter-spacing: 1px; }
@@ -54,13 +54,7 @@
   .loader { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #444; }
   .spinner { width: 32px; height: 32px; border: 3px solid #222; border-top-color: #00E5A0; border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .empty { flex: 1; display: flex; align-items: center; justify-content: center; color: #444; font-size: 14px; text-align: center; padding: 40px; }
-  .swipe-hint-overlay { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity 0.15s ease; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .swipe-arrow { font-size: 24px; color: #00E5A0; transition: transform 0.1s ease; }
-  @keyframes slideLeft { 0%,100%{transform:translateX(0)} 50%{transform:translateX(-6px)} }
-  .swipe-hint-text { font-size: 10px; color: #00E5A0; font-weight: 700; letter-spacing: 1px; }
-  .pull-indicator { text-align:center; color:#00E5A0; font-size:13px; font-weight:600; letter-spacing:1px; height:0; overflow:hidden; transition:height 0.2s ease, opacity 0.2s ease; opacity:0; }
-  .read { opacity: 0.5; }
+  .empty { flex: 1; display: flex; align-items: center; justify-content: center; color: #444; font-size: 14px; text-align: center; padding: 40px; line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -76,7 +70,11 @@
     <div class="tab active" onclick="switchTab('feed')">Feed</div>
     <div class="tab" onclick="switchTab('saved')">Saved ★</div>
   </div>
-  <div class="categories" id="cats"></div>
+  <div class="top-bar">
+    <div class="categories" id="cats"></div>
+    <div class="refresh-btn" onclick="forceRefresh()">↻ Refresh</div>
+  </div>
+  <div class="pull-indicator" id="pullIndicator">↓ Pull to refresh</div>
   <div class="feed" id="feed"></div>
 </div>
 
@@ -84,8 +82,9 @@
 const CAT_COLORS = { Funding:'#00E5A0', IPO:'#8B7FFF', 'M&A':'#FF6B6B', Markets:'#FFB347', 'Market Gap':'#00D4FF', Geopolitics:'#FF8C42' };
 const CATS = ['All','Funding','IPO','M&A','Markets','Market Gap','Geopolitics'];
 const API = 'https://brewburg-backend-1.onrender.com';
-let stories = [], saved = JSON.parse(localStorage.getItem('brewburg_saved') || '{}'), activeTab = 'feed', activeCat = 'All';
+let stories = [], saved = JSON.parse(localStorage.getItem('brewburg_saved') || '{}');
 let readIds = JSON.parse(localStorage.getItem('brewburg_read') || '[]');
+let activeTab = 'feed', activeCat = 'All';
 
 function timeAgo(dateStr) {
   const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
@@ -102,11 +101,17 @@ async function loadStories() {
     const res = await fetch(url);
     const data = await res.json();
     stories = data.stories || [];
+    sessionStorage.setItem('stories_cache', JSON.stringify(stories));
     render();
   } catch(e) {
-    console.log('Fetch error:', e);
     document.getElementById('feed').innerHTML = '<div class="empty">Could not connect to backend.<br>Make sure the API is running.</div>';
   }
+}
+
+function forceRefresh() {
+  sessionStorage.removeItem('stories_cache');
+  sessionStorage.removeItem('scrollPos');
+  loadStories();
 }
 
 function render() {
@@ -123,16 +128,20 @@ function render() {
       '<div class="card-top"><span class="badge" style="background:' + color + '22;color:' + color + '">' + (s.category||'').toUpperCase() + '</span><span class="source">' + (s.source||'') + ' · ' + time + '</span></div>' +
       '<div class="title">' + s.title + '</div>' +
       '<div class="brief">' + brief + '</div>' +
-      '<div class="card-footer"><span class="hint">← swipe left · full article</span><div class="actions">' +
+      '<div class="card-footer"><span class="hint">← swipe left for full article</span><div class="actions">' +
       '<button class="btn ' + (saved[s.id]?'saved':'') + '" onclick="event.stopPropagation();toggleSave(\'' + s.id + '\')">' + (saved[s.id]?'★':'☆') + '</button>' +
-      '<button class="btn" onclick="event.stopPropagation();window.location.href=\'' + s.url + '\'">↗</button>' +
       '</div></div>' +
-      '<div class="swipe-hint-overlay" id="hint-' + s.id + '"><div class="swipe-arrow">←</div><div class="swipe-hint-text">ARTICLE</div></div>' +
+      '<div class="swipe-reveal" id="hint-' + s.id + '"><div class="swipe-arrow">←</div></div>' +
       '</div></div>';
   }).join('');
   setupSwipe();
   const sv = sessionStorage.getItem('scrollPos');
-  if (sv) { setTimeout(() => { const f = document.getElementById('feed'); if(f) { f.scrollTop = parseInt(sv); sessionStorage.removeItem('scrollPos'); } }, 200); }
+  if (sv) {
+    setTimeout(() => {
+      const f = document.getElementById('feed');
+      if (f) { f.scrollTop = parseInt(sv); sessionStorage.removeItem('scrollPos'); }
+    }, 100);
+  }
 }
 
 function setupSwipe() {
@@ -140,33 +149,43 @@ function setupSwipe() {
     let startX = 0, startY = 0, currentX = 0, isHorizontal = null;
     const url = card.dataset.url;
     const id = card.dataset.id;
-    card.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; currentX = 0; isHorizontal = null; card.classList.remove('animating'); }, { passive: true });
+    const hint = document.getElementById('hint-' + id);
+    const arrow = hint ? hint.querySelector('.swipe-arrow') : null;
+
+    card.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      currentX = 0; isHorizontal = null;
+      card.classList.remove('animating');
+    }, { passive: true });
+
     card.addEventListener('touchmove', e => {
-      const dx = e.touches[0].clientX - startX, dy = e.touches[0].clientY - startY;
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
       if (isHorizontal === null) isHorizontal = Math.abs(dx) > Math.abs(dy);
       if (isHorizontal && dx < 0) {
         currentX = dx;
         card.style.transform = 'translateX(' + currentX + 'px)';
-        const hint = document.getElementById('hint-' + id);
-        if (hint) {
-          const progress = Math.min(Math.abs(currentX) / 80, 1);
-          hint.style.opacity = progress;
-          hint.querySelector('.swipe-arrow').style.transform = 'translateX(' + (-8 * progress) + 'px)';
-        }
+        const progress = Math.min(Math.abs(currentX) / 80, 1);
+        if (hint) hint.style.opacity = progress;
+        if (arrow) arrow.style.transform = 'translateX(' + (-8 * progress) + 'px)';
       }
     }, { passive: true });
+
     card.addEventListener('touchend', () => {
       card.classList.add('animating');
-      const hint = document.getElementById('hint-' + id);
-      if (hint) { hint.style.opacity = 0; hint.querySelector('.swipe-arrow').style.transform = 'translateX(0)'; }
+      if (hint) hint.style.opacity = 0;
+      if (arrow) arrow.style.transform = 'translateX(8px)';
       if (currentX < -80 && url) {
         card.style.transform = 'translateX(-110%)';
-        if (!readIds.includes(id)) { readIds.push(id); localStorage.setItem('brewburg_read', JSON.stringify(readIds)); }
+        if (!readIds.includes(id)) {
+          readIds.push(id);
+          localStorage.setItem('brewburg_read', JSON.stringify(readIds));
+        }
         setTimeout(() => {
           sessionStorage.setItem('scrollPos', document.getElementById('feed').scrollTop);
-          sessionStorage.setItem('stories_cache', JSON.stringify(stories));
           window.location.href = url;
-        }, 300);
+        }, 280);
       } else {
         card.style.transform = 'translateX(0)';
       }
@@ -196,49 +215,65 @@ function setCat(cat) {
     c.style.borderColor = a ? (CAT_COLORS[cat]||'#666') : '#222';
     c.style.color = a ? '#000' : '#666';
   });
+  sessionStorage.removeItem('stories_cache');
   loadStories();
 }
 
-document.getElementById('cats').innerHTML = CATS.map(c => '<div class="cat' + (c==='All'?' active':'') + '" data-cat="' + c + '" onclick="setCat(\'' + c + '\')" style="' + (c==='All'?'background:#666;border-color:#666;color:#000':'') + '">' + c + '</div>').join('');
+document.getElementById('cats').innerHTML = CATS.map(c =>
+  '<div class="cat" data-cat="' + c + '" onclick="setCat(\'' + c + '\')" style="' + (c==='All'?'background:#666;border-color:#666;color:#000':'') + '">' + c + '</div>'
+).join('');
 
-// Restore from cache on back navigation
-const cachedStories = sessionStorage.getItem('stories_cache');
-const cachedScroll = sessionStorage.getItem('scrollPos');
-if (cachedStories && cachedScroll) {
-  stories = JSON.parse(cachedStories);
+// On load — restore cache if coming back from article
+const cached = sessionStorage.getItem('stories_cache');
+const scrollPos = sessionStorage.getItem('scrollPos');
+if (cached && scrollPos) {
+  stories = JSON.parse(cached);
   render();
 } else {
   loadStories();
 }
 
-// Pull to refresh
+// Pull to refresh on feed
+const pullEl = document.getElementById('pullIndicator');
 let touchStartY = 0, isRefreshing = false;
-const pullIndicator = document.createElement('div');
-pullIndicator.className = 'pull-indicator';
-pullIndicator.innerHTML = '↓ Pull to refresh';
-document.getElementById('feed').before(pullIndicator);
-document.getElementById('feed').addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+
+document.getElementById('feed').addEventListener('touchstart', e => {
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
 document.getElementById('feed').addEventListener('touchmove', e => {
   if (isRefreshing) return;
   const dist = e.touches[0].clientY - touchStartY;
-  if (dist > 0 && document.getElementById('feed').scrollTop === 0) {
-    pullIndicator.style.height = Math.min(dist * 0.5, 44) + 'px';
-    pullIndicator.style.opacity = Math.min(dist / 80, 1);
-    pullIndicator.innerHTML = dist > 80 ? '↑ Release to refresh' : '↓ Pull to refresh';
-  }
-}, { passive: true });
-document.getElementById('feed').addEventListener('touchend', e => {
-  const dist = e.changedTouches[0].clientY - touchStartY;
-  if (dist > 80 && document.getElementById('feed').scrollTop === 0 && !isRefreshing) {
-    isRefreshing = true;
-    pullIndicator.innerHTML = '⟳ Refreshing...';
-    pullIndicator.style.height = '44px';
-    sessionStorage.removeItem('stories_cache');
-    loadStories().then(() => { pullIndicator.style.height = '0'; pullIndicator.style.opacity = '0'; isRefreshing = false; });
-  } else {
-    pullIndicator.style.height = '0'; pullIndicator.style.opacity = '0';
+  const feed = document.getElementById('feed');
+  if (dist > 0 && feed.scrollTop === 0) {
+    const h = Math.min(dist * 0.45, 40);
+    pullEl.style.height = h + 'px';
+    pullEl.style.opacity = Math.min(dist / 60, 1);
+    pullEl.textContent = dist > 70 ? '↑ Release to refresh' : '↓ Pull to refresh';
   }
 }, { passive: true });
 
-setInterval(loadStories, 30 * 60 * 1000);
+document.getElementById('feed').addEventListener('touchend', e => {
+  const dist = e.changedTouches[0].clientY - touchStartY;
+  const feed = document.getElementById('feed');
+  if (dist > 70 && feed.scrollTop === 0 && !isRefreshing) {
+    isRefreshing = true;
+    pullEl.textContent = '⟳ Refreshing...';
+    pullEl.style.height = '40px';
+    pullEl.style.opacity = '1';
+    sessionStorage.removeItem('stories_cache');
+    loadStories().then(() => {
+      pullEl.style.height = '0';
+      pullEl.style.opacity = '0';
+      isRefreshing = false;
+    });
+  } else {
+    pullEl.style.height = '0';
+    pullEl.style.opacity = '0';
+  }
+}, { passive: true });
+
+setInterval(() => { sessionStorage.removeItem('stories_cache'); loadStories(); }, 30 * 60 * 1000);
 </script>
+</body>
+</html>
