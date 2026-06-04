@@ -277,6 +277,16 @@ document.getElementById('feed').addEventListener('touchend', e => {
 const cached = sessionStorage.getItem('stories_cache');
 if (cached) { stories = JSON.parse(cached); render(); } else { loadStories(); }
 
+function enableNotifs() {
+  if (window.OneSignal) {
+    OneSignal.Slidedown.promptPush();
+  } else if (window.OneSignalDeferred) {
+    OneSignalDeferred.push(function(OneSignal) {
+      OneSignal.Slidedown.promptPush();
+    });
+  }
+  document.getElementById('notif-btn').style.display = 'none';
+}
 setInterval(() => { sessionStorage.removeItem('stories_cache'); loadStories(); }, 30 * 60 * 1000);
 </script>
 </body>
