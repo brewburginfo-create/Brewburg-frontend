@@ -63,7 +63,10 @@
       <div class="logo">☕ brewburg</div>
       <div class="tagline">BUSINESS · 60 WORDS · UNFILTERED</div>
     </div>
-    <div class="live"><div class="live-dot"></div><div class="live-text">LIVE</div></div>
+    <div style="display:flex;align-items:center;gap:8px;">
+  <div class="live"><div class="live-dot"></div><div class="live-text">LIVE</div></div>
+  <div id="notif-btn" onclick="enableNotifs()" style="background:#1a1a1a;border:1px solid #222;padding:5px 10px;border-radius:20px;font-size:10px;color:#666;cursor:pointer;">🔔 Notify me</div>
+</div>
   </div>
   <div class="tabs">
     <div class="tab active" onclick="switchTab('feed')">Feed</div>
