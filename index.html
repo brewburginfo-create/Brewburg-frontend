@@ -57,6 +57,123 @@
 </style>
 </head>
 <body>
+  <!-- ONBOARDING -->
+<div id="onboarding" style="display:none;position:fixed;inset:0;background:#080808;z-index:9999;overflow-y:auto;padding:32px 20px;">
+  <div style="max-width:420px;margin:0 auto;">
+    <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px;">☕ brewburg</div>
+    <div style="font-size:13px;color:#444;letter-spacing:2px;margin-bottom:40px;">BUSINESS · 60 WORDS · UNFILTERED</div>
+
+    <div id="ob-step1">
+      <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:8px;">Who are you?</div>
+      <div style="font-size:13px;color:#555;margin-bottom:24px;">We'll personalise your feed</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="ob-btn" onclick="selectRole(this,'founder')" style="padding:20px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;text-align:center;">
+          <div style="font-size:24px;">🚀</div><div style="color:#fff;font-weight:700;margin-top:8px;">Founder</div>
+        </div>
+        <div class="ob-btn" onclick="selectRole(this,'investor')" style="padding:20px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;text-align:center;">
+          <div style="font-size:24px;">💼</div><div style="color:#fff;font-weight:700;margin-top:8px;">Investor</div>
+        </div>
+        <div class="ob-btn" onclick="selectRole(this,'student')" style="padding:20px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;text-align:center;">
+          <div style="font-size:24px;">📚</div><div style="color:#fff;font-weight:700;margin-top:8px;">Student</div>
+        </div>
+        <div class="ob-btn" onclick="selectRole(this,'professional')" style="padding:20px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;text-align:center;">
+          <div style="font-size:24px;">💡</div><div style="color:#fff;font-weight:700;margin-top:8px;">Professional</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ob-step2" style="display:none;">
+      <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:8px;">What do you follow?</div>
+      <div style="font-size:13px;color:#555;margin-bottom:24px;">Pick all that interest you</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <div class="ob-tag" onclick="toggleTag(this,'Funding')" style="padding:10px 18px;border-radius:20px;border:1px solid #222;background:#111;color:#888;cursor:pointer;font-weight:600;font-size:13px;">💰 Funding</div>
+        <div class="ob-tag" onclick="toggleTag(this,'IPO')" style="padding:10px 18px;border-radius:20px;border:1px solid #222;background:#111;color:#888;cursor:pointer;font-weight:600;font-size:13px;">📈 IPO</div>
+        <div class="ob-tag" onclick="toggleTag(this,'M&A')" style="padding:10px 18px;border-radius:20px;border:1px solid #222;background:#111;color:#888;cursor:pointer;font-weight:600;font-size:13px;">🤝 M&A</div>
+        <div class="ob-tag" onclick="toggleTag(this,'Markets')" style="padding:10px 18px;border-radius:20px;border:1px solid #222;background:#111;color:#888;cursor:pointer;font-weight:600;font-size:13px;">📊 Markets</div>
+        <div class="ob-tag" onclick="toggleTag(this,'Geopolitics')" style="padding:10px 18px;border-radius:20px;border:1px solid #222;background:#111;color:#888;cursor:pointer;font-weight:600;font-size:13px;">🌍 Geopolitics</div>
+        <div class="ob-tag" onclick="toggleTag(this,'Market Gap')" style="padding:10px 18px;border-radius:20px;border:1px solid #222;background:#111;color:#888;cursor:pointer;font-weight:600;font-size:13px;">🔍 Market Gap</div>
+      </div>
+      <button onclick="goStep3()" style="margin-top:32px;width:100%;padding:16px;background:#00E5A0;border:none;border-radius:16px;font-size:16px;font-weight:800;color:#000;cursor:pointer;">Continue →</button>
+    </div>
+
+    <div id="ob-step3" style="display:none;">
+      <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:8px;">How often?</div>
+      <div style="font-size:13px;color:#555;margin-bottom:24px;">Daily notification frequency</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="ob-freq" onclick="selectFreq(this,'1')" style="padding:18px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;">
+          <div style="color:#fff;font-weight:700;">Once a day</div>
+          <div style="color:#555;font-size:12px;margin-top:4px;">7:30am morning brief</div>
+        </div>
+        <div class="ob-freq" onclick="selectFreq(this,'2')" style="padding:18px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;">
+          <div style="color:#fff;font-weight:700;">Twice a day</div>
+          <div style="color:#555;font-size:12px;margin-top:4px;">7:30am + 7pm</div>
+        </div>
+        <div class="ob-freq" onclick="selectFreq(this,'3')" style="padding:18px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;">
+          <div style="color:#fff;font-weight:700;">Three times a day</div>
+          <div style="color:#555;font-size:12px;margin-top:4px;">7:30am + 1pm + 7pm</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- ONBOARDING -->
+<div id="onboarding" style="display:none;position:fixed;inset:0;background:#080808;z-index:9999;overflow-y:auto;padding:32px 20px;">
+  <div style="max-width:420px;margin:0 auto;">
+    <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:4px;">☕ brewburg</div>
+    <div style="font-size:13px;color:#444;letter-spacing:2px;margin-bottom:40px;">BUSINESS · 60 WORDS · UNFILTERED</div>
+
+    <div id="ob-step1">
+      <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:8px;">Who are you?</div>
+      <div style="font-size:13px;color:#555;margin-bottom:24px;">We'll personalise your feed</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="ob-btn" onclick="selectRole(this,'founder')" style="padding:20px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;text-align:center;">
+          <div style="font-size:24px;">🚀</div><div style="color:#fff;font-weight:700;margin-top:8px;">Founder</div>
+        </div>
+        <div class="ob-btn" onclick="selectRole(this,'investor')" style="padding:20px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;text-align:center;">
+          <div style="font-size:24px;">💼</div><div style="color:#fff;font-weight:700;margin-top:8px;">Investor</div>
+        </div>
+        <div class="ob-btn" onclick="selectRole(this,'student')" style="padding:20px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;text-align:center;">
+          <div style="font-size:24px;">📚</div><div style="color:#fff;font-weight:700;margin-top:8px;">Student</div>
+        </div>
+        <div class="ob-btn" onclick="selectRole(this,'professional')" style="padding:20px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;text-align:center;">
+          <div style="font-size:24px;">💡</div><div style="color:#fff;font-weight:700;margin-top:8px;">Professional</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ob-step2" style="display:none;">
+      <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:8px;">What do you follow?</div>
+      <div style="font-size:13px;color:#555;margin-bottom:24px;">Pick all that interest you</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <div class="ob-tag" onclick="toggleTag(this,'Funding')" style="padding:10px 18px;border-radius:20px;border:1px solid #222;background:#111;color:#888;cursor:pointer;font-weight:600;font-size:13px;">💰 Funding</div>
+        <div class="ob-tag" onclick="toggleTag(this,'IPO')" style="padding:10px 18px;border-radius:20px;border:1px solid #222;background:#111;color:#888;cursor:pointer;font-weight:600;font-size:13px;">📈 IPO</div>
+        <div class="ob-tag" onclick="toggleTag(this,'M&A')" style="padding:10px 18px;border-radius:20px;border:1px solid #222;background:#111;color:#888;cursor:pointer;font-weight:600;font-size:13px;">🤝 M&A</div>
+        <div class="ob-tag" onclick="toggleTag(this,'Markets')" style="padding:10px 18px;border-radius:20px;border:1px solid #222;background:#111;color:#888;cursor:pointer;font-weight:600;font-size:13px;">📊 Markets</div>
+        <div class="ob-tag" onclick="toggleTag(this,'Geopolitics')" style="padding:10px 18px;border-radius:20px;border:1px solid #222;background:#111;color:#888;cursor:pointer;font-weight:600;font-size:13px;">🌍 Geopolitics</div>
+        <div class="ob-tag" onclick="toggleTag(this,'Market Gap')" style="padding:10px 18px;border-radius:20px;border:1px solid #222;background:#111;color:#888;cursor:pointer;font-weight:600;font-size:13px;">🔍 Market Gap</div>
+      </div>
+      <button onclick="goStep3()" style="margin-top:32px;width:100%;padding:16px;background:#00E5A0;border:none;border-radius:16px;font-size:16px;font-weight:800;color:#000;cursor:pointer;">Continue →</button>
+    </div>
+
+    <div id="ob-step3" style="display:none;">
+      <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:8px;">How often?</div>
+      <div style="font-size:13px;color:#555;margin-bottom:24px;">Daily notification frequency</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="ob-freq" onclick="selectFreq(this,'1')" style="padding:18px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;">
+          <div style="color:#fff;font-weight:700;">Once a day</div>
+          <div style="color:#555;font-size:12px;margin-top:4px;">7:30am morning brief</div>
+        </div>
+        <div class="ob-freq" onclick="selectFreq(this,'2')" style="padding:18px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;">
+          <div style="color:#fff;font-weight:700;">Twice a day</div>
+          <div style="color:#555;font-size:12px;margin-top:4px;">7:30am + 7pm</div>
+        </div>
+        <div class="ob-freq" onclick="selectFreq(this,'3')" style="padding:18px;border-radius:16px;border:1px solid #222;background:#111;cursor:pointer;">
+          <div style="color:#fff;font-weight:700;">Three times a day</div>
+          <div style="color:#555;font-size:12px;margin-top:4px;">7:30am + 1pm + 7pm</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="app">
   <div class="header">
     <div>
@@ -277,6 +394,57 @@ document.getElementById('feed').addEventListener('touchend', e => {
 const cached = sessionStorage.getItem('stories_cache');
 if (cached) { stories = JSON.parse(cached); render(); } else { loadStories(); }
 
+// ONBOARDING
+let obRole = '', obTopics = [], obFreq = '2';
+
+function checkOnboarding() {
+  if (!localStorage.getItem('ob_done')) {
+    document.getElementById('onboarding').style.display = 'block';
+  }
+}
+
+function selectRole(el, role) {
+  obRole = role;
+  document.querySelectorAll('.ob-btn').forEach(b => b.style.borderColor = '#222');
+  el.style.borderColor = '#00E5A0';
+  setTimeout(() => {
+    document.getElementById('ob-step1').style.display = 'none';
+    document.getElementById('ob-step2').style.display = 'block';
+  }, 300);
+}
+
+function toggleTag(el, topic) {
+  if (obTopics.includes(topic)) {
+    obTopics = obTopics.filter(t => t !== topic);
+    el.style.borderColor = '#222';
+    el.style.color = '#888';
+  } else {
+    obTopics.push(topic);
+    el.style.borderColor = '#00E5A0';
+    el.style.color = '#00E5A0';
+  }
+}
+
+function goStep3() {
+  document.getElementById('ob-step2').style.display = 'none';
+  document.getElementById('ob-step3').style.display = 'block';
+}
+
+function selectFreq(el, freq) {
+  obFreq = freq;
+  document.querySelectorAll('.ob-freq').forEach(b => b.style.borderColor = '#222');
+  el.style.borderColor = '#00E5A0';
+  setTimeout(() => {
+    localStorage.setItem('ob_done', '1');
+    localStorage.setItem('ob_role', obRole);
+    localStorage.setItem('ob_topics', JSON.stringify(obTopics));
+    localStorage.setItem('ob_freq', obFreq);
+    document.getElementById('onboarding').style.display = 'none';
+    enableNotifs();
+  }, 400);
+}
+
+checkOnboarding();
 function enableNotifs() {
   if (window.OneSignal) {
     OneSignal.Slidedown.promptPush();
